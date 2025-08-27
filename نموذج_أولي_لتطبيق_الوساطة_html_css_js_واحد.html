@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>وصلني — منصة الوساطة (مستخدم + مزوّد)</title>
+  <style>
+    :root{--bg:#0b1220;--card:#0f172a;--muted:#9ca3af;--ink:#e6eef8;--brand:#16a34a;--accent:#2563eb;--glass:rgba(255,255,255,.04)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:linear-gradient(180deg,#071025,#0b1220);color:var(--ink);min-height:100vh}
+    .container{max-width:1100px;margin:18px auto;padding:16px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo-b{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--brand),var(--accent));font-weight:800}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    /* layout */
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
+    @media(max-width:980px){.grid{grid-template-columns:1fr}}
+
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,.04)}
+    .muted{color:var(--muted)}
+    label{display:block;margin-bottom:6px;color:var(--muted)}
+    input,textarea,select,button{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--ink)}
+    textarea{min-height:100px}
+    .btn{cursor:pointer;border:0;padding:10px 12px;border-radius:10px;font-weight:700}
+    .btn-primary{background:linear-gradient(135deg,var(--brand),var(--accent));color:#041018}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.06);color:var(--ink)}
+
+    .domains{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+    @media(max-width:600px){.domains{grid-template-columns:repeat(2,1fr)}}
+    .domain{padding:12px;border-radius:12px;background:var(--glass);cursor:pointer;border:1px solid rgba(255,255,255,.03);display:flex;align-items:center;gap:10px}
+    .domain:hover{transform:translateY(-3px)}
+    .ico{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.03)}
+
+    .feed{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+    .req{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.03)}
+    .meta{flex:1}
+    .tag{font-size:12px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,.03);color:var(--muted)}
+    .price{font-weight:800}
+
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:18px}
+    .modal{width:100%;max-width:920px;border-radius:14px;overflow:auto}
+
+    .offers-list{display:flex;flex-direction:column;gap:10px}
+    .offer{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:rgba(255,255,255,.02)}
+    .call-sim{display:flex;align-items:center;gap:10px}
+
+    footer{margin-top:22px;color:var(--muted);font-size:13px;text-align:center}
+
+    .topControls{display:flex;gap:8px;align-items:center}
+    .small{font-size:13px;color:var(--muted)}
+
+    .flex{display:flex;gap:8px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-b">وصل</div>
+        <div>
+          <h1>وصلني — منصة الوساطة الذكية</h1>
+          <p class="lead">ثورة في الوصول للخدمات — مستخدمون ينشرون، مزوّدون يتنافسون، واتصال مباشر بعد الاتفاق</p>
+        </div>
+      </div>
+
+      <div class="topControls">
+        <select id="accountType" title="نوع الحساب" style="padding:8px;border-radius:10px;background:transparent;color:var(--ink);border:1px solid rgba(255,255,255,.06)">
+          <option value="client">حساب: عميل</option>
+          <option value="provider">حساب: مزوّد</option>
+        </select>
+        <div id="userPhoneDisplay" class="small"></div>
+      </div>
+    </header>
+
+    <!-- LOGIN / DASHBOARDS -->
+    <div id="authCard" class="card" style="margin-top:12px">
+      <div id="loginArea">
+        <label>سجّل دخولك برقم الهاتف (تجريبي)</label>
+        <div style="display:flex;gap:8px">
+          <input id="phone" placeholder="مثال: 0612345678" />
+          <button class="btn btn-primary" id="loginBtn">دخول</button>
+        </div>
+        <div class="small" style="margin-top:8px">البيانات تحفظ محليًا على جهازك لاختبار التطبيق</div>
+      </div>
+
+      <div id="logoutArea" style="display:none">
+        <div class="small">مرحبًا، <span id="mePhone"></span></div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn btn-ghost" id="logoutBtn">تسجيل خروج</button>
+          <button class="btn btn-ghost" id="viewProfile">ملفي</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Main area: Client or Provider dashboard appears here -->
+      <main>
+        <!-- Client dashboard -->
+        <div id="clientDashboard" class="card hidden">
+          <strong>نشر طلب سريع</strong>
+          <div style="margin-top:8px">
+            <label>اختر المجال</label>
+            <div class="domains" id="domains"></div>
+          </div>
+
+          <div style="margin-top:12px">
+            <label>عنوان الطلب</label>
+            <input id="reqTitle" placeholder="مثال: تركيب غسالة أطباق" />
+            <label>تفاصيل الطلب</label>
+            <textarea id="reqDesc" placeholder="صف المطلوب بدقة: موقع، مواصفات، وقت"></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <input id="reqPrice" placeholder="السعر المقترح (د.م)" />
+              <input id="reqDays" placeholder="المدة (أيام)" />
+            </div>
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <button class="btn btn-primary" id="postReq">نشر الطلب الآن</button>
+              <button class="btn btn-ghost" id="clearReq">مسح الحقول</button>
+            </div>
+          </div>
+
+          <div style="margin-top:18px">
+            <strong>طلباتي الأخيرة</strong>
+            <div id="myRequests" class="feed"></div>
+          </div>
+        </div>
+
+        <!-- Provider dashboard -->
+        <div id="providerDashboard" class="card hidden">
+          <strong>لوحة المزوّد — الطلبات المناسبة لمجالك</strong>
+          <div style="margin-top:10px" class="small">اختر المجال في أعلى اليمين لفلترة الطلبات</div>
+          <div id="providerRequests" class="feed" style="margin-top:12px"></div>
+        </div>
+      </main>
+
+      <!-- Right rail -->
+      <aside>
+        <div class="card">
+          <strong>معلومات سريعة</strong>
+          <div style="margin-top:8px;color:var(--muted)">
+            <ul>
+              <li>سجّل برقم هاتفك لإتمام التواصل.</li>
+              <li>كمستخدم: انشر طلب واضبط السعر — ستحصل على عروض من مزوّدين.</li>
+              <li>كمزوّد: اختر مجالك واعرض عروضك على الطلبات المناسبة.</li>
+              <li>عند القبول: سيظهر زر "اتصال" لمحاكاة تواصل مباشر.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="card">
+          <strong>حالتك</strong>
+          <div style="margin-top:8px" id="statusHint">لم تُسجل بعد</div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>نموذج تجريبي متكامل — حفظ محلي · لا مدفوعات حقيقية</footer>
+  </div>
+
+  <!-- Offers modal -->
+  <div class="overlay" id="offersOverlay">
+    <div class="modal card" role="dialog" aria-modal="true">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong id="modalTitle">عروض الطلب</strong>
+        <div><button class="btn btn-ghost" id="closeOffers">إغلاق</button></div>
+      </div>
+
+      <div style="margin-top:12px">
+        <div id="modalDesc" class="small"></div>
+        <div style="margin-top:12px" class="offers-list" id="offersList"></div>
+        <div style="margin-top:12px" id="offerFormWrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Data & helpers ---
+    const domainsData = [
+      {id:'home', name:'خدمات منزلية', ico:'🧰'},
+      {id:'delivery', name:'توصيل ونقل', ico:'🚚'},
+      {id:'tech', name:'تصميم وبرمجة', ico:'💻'},
+      {id:'products', name:'منتجات', ico:'📦'},
+      {id:'wellness', name:'صحة وجمال', ico:'💆'},
+      {id:'others', name:'أخرى', ico:'🔧'},
+    ];
+
+    const uid = ()=> Math.random().toString(36).slice(2,9);
+    const now = ()=> new Date().toLocaleString();
+
+    function defaultState(){
+      return {me:null, requests:[], offers:[], providers: generateProviders()};
+    }
+    function generateProviders(){
+      const list=[];
+      domainsData.forEach(d=>{ for(let i=1;i<=5;i++){ list.push({id:d.id+'-'+i, name:d.name.split(' ')[0]+'-'+i, domain:d.id, phone:'06'+Math.floor(10000000+Math.random()*90000000)}); } });
+      return list;
+    }
+
+    const LS_KEY = 'wasln_v2_state';
+    function load(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || defaultState(); }catch(e){ return defaultState(); } }
+    function save(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
+
+    let state = load();
+
+    // --- DOM refs ---
+    const accountType = document.getElementById('accountType');
+    const phoneInput = document.getElementById('phone');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const loginArea = document.getElementById('loginArea');
+    const logoutArea = document.getElementById('logoutArea');
+    const mePhone = document.getElementById('mePhone');
+    const userPhoneDisplay = document.getElementById('userPhoneDisplay');
+
+    const clientDashboard = document.getElementById('clientDashboard');
+    const providerDashboard = document.getElementById('providerDashboard');
+    const domainsEl = document.getElementById('domains');
+    const reqTitle = document.getElementById('reqTitle');
+    const reqDesc = document.getElementById('reqDesc');
+    const reqPrice = document.getElementById('reqPrice');
+    const reqDays = document.getElementById('reqDays');
+    const postReq = document.getElementById('postReq');
+    const clearReq = document.getElementById('clearReq');
+    const myRequests = document.getElementById('myRequests');
+    const providerRequests = document.getElementById('providerRequests');
+
+    const offersOverlay = document.getElementById('offersOverlay');
+    const closeOffers = document.getElementById('closeOffers');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDesc');
+    const offersList = document.getElementById('offersList');
+    const offerFormWrap = document.getElementById('offerFormWrap');
+
+    const statusHint = document.getElementById('statusHint');
+
+    // --- Init UI ---
+    function init(){
+      renderDomains(); renderTop(); renderDashboards();
+
+      // events
+      loginBtn.addEventListener('click', login);
+      logoutBtn.addEventListener('click', logout);
+      postReq.addEventListener('click', createRequest);
+      clearReq.addEventListener('click', ()=>{ reqTitle.value=''; reqDesc.value=''; reqPrice.value=''; reqDays.value=''; });
+      closeOffers.addEventListener('click', ()=> offersOverlay.style.display='none');
+      accountType.addEventListener('change', ()=> { renderTop(); renderDashboards(); });
+
+      // if previously logged
+      if(state.me){ showLoggedIn(); }
+      renderAllLists();
+    }
+
+    function renderTop(){
+      if(state.me){ userPhoneDisplay.textContent = state.me.phone; } else userPhoneDisplay.textContent = '';
+      const type = accountType.value;
+      // status
+      statusHint.textContent = state.me ? (type==='client' ? 'مسجّل كعميل' : 'مسجّل كمزوّد') : 'لم تُسجل بعد';
+    }
+
+    function login(){
+      const phone = phoneInput.value.trim(); if(!/^[0-9]{8,12}$/.test(phone)){ alert('أدخل رقم هاتف صالح (أرقام فقط)'); return; }
+      const role = accountType.value;
+      state.me = {phone, role}; save(state); showLoggedIn(); renderTop(); renderDashboards(); renderAllLists();
+    }
+
+    function logout(){ if(!confirm('تسجيل الخروج؟')) return; state.me=null; save(state); showLoggedOut(); renderTop(); renderAllLists(); }
+
+    function showLoggedIn(){ loginArea.style.display='none'; logoutArea.style.display='block'; mePhone.textContent = state.me.phone; accountType.value = state.me.role; }
+    function showLoggedOut(){ loginArea.style.display='block'; logoutArea.style.display='none'; mePhone.textContent=''; }
+
+    // DOM: domains picker (client chooses one)
+    let selectedDomain = null;
+    function renderDomains(){ domainsEl.innerHTML=''; domainsData.forEach(d=>{
+      const el = document.createElement('div'); el.className='domain'; el.innerHTML = `<div class='ico'>${d.ico}</div><div><strong>${d.name}</strong><div class='small'>المتخصصون: ${countProviders(d.id)}</div></div>`;
+      el.addEventListener('click', ()=>{ selectDomain(d.id, el); }); domainsEl.appendChild(el);
+    }); }
+    function countProviders(domain){ return state.providers.filter(p=>p.domain===domain).length }
+    function selectDomain(id, el){ selectedDomain = id; // highlight
+      $$('.domain').forEach(x=>x.style.outline=''); el.style.outline='2px solid rgba(255,255,255,.06)'; }
+
+    // create request
+    function createRequest(){ if(!state.me || state.me.role!=='client'){ alert('سجّل كعميل أولاً'); return; }
+      if(!selectedDomain){ alert('اختر المجال أولا'); return; }
+      const title = reqTitle.value.trim(); const desc = reqDesc.value.trim(); const price = Number(reqPrice.value)||0; const days = reqDays.value.trim()||'-';
+      if(!title||!desc){ alert('اكتب عنوانًا ووصفًا للطلب'); return; }
+      const r = { id: uid(), ownerPhone: state.me.phone, domain:selectedDomain, domainName: domainsData.find(d=>d.id===selectedDomain).name, title, desc, price, days, status:'open', createdAt: now() };
+      state.requests.unshift(r);
+      // notify providers: simulate by generating 2-4 auto offers from providers in that domain
+      const candidates = state.providers.filter(p=>p.domain===selectedDomain).slice(0,4);
+      candidates.forEach((p,i)=>{ state.offers.unshift({ id: uid(), requestId: r.id, providerId: p.id, providerName: p.name, providerPhone: p.phone, price: Math.max(20, Math.round((price||100)*(0.75+Math.random()*0.6))), days: Math.max(1, (parseInt(r.days)||1) + (i-1)), message: 'مرحبًا — أستطيع تنفيذ الطلب بسرعة وجودة.', status:'pending', createdAt: now() }); });
+      save(state); reqTitle.value=''; reqDesc.value=''; reqPrice.value=''; reqDays.value=''; selectedDomain=null; $$('.domain').forEach(x=>x.style.outline=''); renderAllLists(); openOffersModal(r.id);
+    }
+
+    // provider view: list requests filtered by accountType domain selection
+    function renderProviderRequests(){ providerRequests.innerHTML=''; if(!state.me || state.me.role!=='provider'){ providerRequests.innerHTML = '<div class="small">سجّل كمزوّد لعرض الطلبات المتاحة</div>'; return; }
+      // provider can choose which domain they want (use accountType select? we keep simple: show all)
+      const list = state.requests.filter(r=> r.status==='open');
+      if(!list.length) providerRequests.innerHTML = '<div class="small">لا توجد طلبات مفتوحة حاليًا</div>';
+      list.forEach(r=>{ const el = document.createElement('div'); el.className='req'; el.innerHTML = `<div style='width:56px;height:56px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.02)'>${domainsData.find(d=>d.id===r.domain).ico}</div>
+        <div class='meta'>
+          <div style='display:flex;justify-content:space-between;align-items:center'><strong>${r.title}</strong><div class='small'>${r.createdAt}</div></div>
+          <div class='small'>${r.desc}</div>
+          <div style='margin-top:8px;display:flex;gap:8px;align-items:center'><div class='tag'>${r.domainName}</div><div class='tag'>السعر: <span class='price'>${r.price||'غير محدد'}</span> د.م</div></div>
+        </div>
+        <div style='display:flex;flex-direction:column;gap:8px'>
+          <button class='btn btn-primary' data-view='${r.id}'>عرض & تقديم عرض</button>
+        </div>`;
+        el.querySelector('[data-view]').addEventListener('click', ()=> openProviderOfferForm(r.id)); providerRequests.appendChild(el);
+      });
+    }
+
+    // open modal for a request (client sees offers, provider sees offer form)
+    function openOffersModal(requestId){ const req = state.requests.find(x=>x.id===requestId); if(!req) return; modalTitle.textContent = `العروض: ${req.title}`; modalDesc.textContent = `${req.desc} · المجال: ${req.domainName} · منشور: ${req.createdAt}`; renderOffers(requestId); offersOverlay.style.display='flex'; }
+
+    function renderOffers(requestId){ offersList.innerHTML=''; const offs = state.offers.filter(o=>o.requestId===requestId);
+      if(!offs.length) offersList.innerHTML = '<div class="small">لا توجد عروض بعد</div>';
+      offs.forEach(o=>{
+        const el = document.createElement('div'); el.className='offer'; el.innerHTML = `<div style='display:flex;gap:12px;align-items:center'><div style='width:56px;height:56px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.02)'>👤</div>
+          <div><strong>${o.providerName}</strong><div class='small'>${o.message}</div><div class='small'>${o.providerPhone || '—'}</div></div></div>
+          <div style='display:flex;flex-direction:column;gap:8px;align-items:flex-end'><div class='small'>${o.price} د.م · ${o.days} يوم</div>
+            <div style='display:flex;gap:6px'>
+              ${ state.me && state.me.role==='client' && state.me.phone === (state.requests.find(r=>r.id===requestId)||{}).ownerPhone ? `<button class='btn btn-primary' data-accept='${o.id}'>قبول</button>` : '' }
+              ${ state.me && state.me.role==='provider' && o.providerPhone===state.me.phone ? `<button class='btn btn-ghost' data-edit='${o.id}'>تعديل</button>` : '' }
+            </div>
+          </div>`;
+        // accept handler
+        const acc = el.querySelector('[data-accept]'); if(acc) acc.addEventListener('click', ()=> acceptOffer(acc.dataset.accept));
+        const edit = el.querySelector('[data-edit]'); if(edit) edit.addEventListener('click', ()=> editOffer(edit.dataset.edit));
+        offersList.appendChild(el);
+      });
+
+      // provider offer form (if current user is provider)
+      if(state.me && state.me.role==='provider'){
+        offerFormWrap.innerHTML = `<form id='offerForm' style='display:flex;gap:8px;align-items:center;margin-top:12px'>
+          <input name='price' placeholder='السعر (د.م)' required />
+          <input name='days' placeholder='المدة (أيام)' required />
+          <input name='message' placeholder='رسالة قصيرة' style='flex:1' />
+          <button class='btn btn-primary'>أرسل عرض</button>
+        </form>`;
+        document.getElementById('offerForm').onsubmit = function(e){ e.preventDefault(); const fd=new FormData(e.target); state.offers.unshift({ id:uid(), requestId, providerId:'me', providerName: 'أنا', providerPhone: state.me.phone, price: Number(fd.get('price')), days: Number(fd.get('days')), message: fd.get('message')||'', status:'pending', createdAt: now() }); save(state); renderOffers(requestId); renderAllLists(); }
+      } else offerFormWrap.innerHTML='';
+    }
+
+    function openProviderOfferForm(requestId){ openOffersModal(requestId); }
+
+    function acceptOffer(offerId){ const o = state.offers.find(x=>x.id===offerId); if(!o) return; // mark accepted and close others
+      state.offers.filter(x=>x.requestId===o.requestId).forEach(x=> x.status = x.id===o.id ? 'accepted' : (x.status==='rejected'?'rejected':'rejected'));
+      const req = state.requests.find(r=>r.id===o.requestId); if(req) req.status='in_progress'; save(state); renderOffers(o.requestId); renderAllLists(); simulateContact(o);
+    }
+
+    function editOffer(offerId){ const o = state.offers.find(x=>x.id===offerId); if(!o) return; const np = prompt('السعر الجديد', o.price); const nd = prompt('المدة (أيام)', o.days); if(np) o.price = Number(np); if(nd) o.days = nd; save(state); renderAllLists(); renderOffers(o.requestId); }
+
+    function simulateContact(offer){ // show a little card in modal to simulate contact
+      const callWrap = document.createElement('div'); callWrap.className='card'; callWrap.style.marginTop='12px'; callWrap.innerHTML = `
+        <div style='display:flex;justify-content:space-between;align-items:center'>
+          <div><strong>تم قبول العرض — ${offer.providerName}</strong><div class='small'>السعر: ${offer.price} د.م · المدة: ${offer.days} يوم</div></div>
+          <div class='call-sim'><button class='btn btn-primary' id='callBtn'>الاتصال الآن</button><button class='btn btn-ghost' id='msgBtn'>مراسلة</button></div>
+        </div>
+        <div class='small' style='margin-top:8px'>يمكنك الاتصال أو مراسلة المزوّد عبر الرقم: <b>${offer.providerPhone||'—'}</b> — هذا محاكاة تواصل داخل النسخة التجريبية.</div>
+      `;
+      // remove previous call cards
+      const prev = offersOverlay.querySelectorAll('.card.call-sim'); prev.forEach(p=>p.remove());
+      callWrap.classList.add('call-sim'); offersOverlay.querySelector('.modal').appendChild(callWrap);
+      document.getElementById('callBtn').addEventListener('click', ()=> alert('محاكاة: يجري الاتصال بالمزوّد — لا توجد مكالمة حقيقية'));
+      document.getElementById('msgBtn').addEventListener('click', ()=> alert('محاكاة: فتح نافذة المراسلة'));
+    }
+
+    // render client requests and provider view
+    function renderMyRequests(){ myRequests.innerHTML=''; if(!state.me || state.me.role!=='client'){ myRequests.innerHTML = '<div class="small">سجّل كعميل لعرض طلباتك</div>'; return; }
+      const my = state.requests.filter(r=> r.ownerPhone === state.me.phone);
+      if(!my.length) myRequests.innerHTML = '<div class="small">لا توجد طلبات منشورة بعد</div>';
+      my.forEach(r=>{ const el = document.createElement('div'); el.className='req'; el.innerHTML = `<div style='width:56px;height:56px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.02)'>${domainsData.find(d=>d.id===r.domain).ico}</div>
+          <div class='meta'><div style='display:flex;justify-content:space-between;align-items:center'><strong>${r.title}</strong><div class='small'>${r.createdAt}</div></div>
+            <div class='small'>${r.desc}</div>
+            <div style='margin-top:8px;display:flex;gap:8px;align-items:center'><div class='tag'>${r.domainName}</div><div class='tag'>السعر: <span class='price'>${r.price||'غير محدد'}</span> د.م</div></div>
+          </div>
+          <div style='display:flex;flex-direction:column;gap:8px'>
+            <button class='btn btn-primary' data-open='${r.id}'>عرض العروض</button>
+            <button class='btn btn-ghost' data-del='${r.id}'>حذف</button>
+          </div>`;
+        el.querySelector('[data-open]').addEventListener('click', ()=> openOffersModal(r.id));
+        el.querySelector('[data-del]').addEventListener('click', ()=> { if(confirm('حذف الطلب نهائياً؟')){ state.requests = state.requests.filter(x=>x.id!==r.id); state.offers = state.offers.filter(o=>o.requestId!==r.id); save(state); renderAllLists(); } });
+        myRequests.appendChild(el);
+      }); }
+
+    function renderAllLists(){ renderMyRequests(); renderProviderRequests(); }
+
+    // helper selector
+    function $$(sel, root=document){ return Array.from((root||document).querySelectorAll(sel)); }
+
+    // initial render
+    init();
+    function renderDashboards(){ if(state.me && state.me.role==='provider' || accountType.value==='provider'){ providerDashboard.style.display='block'; clientDashboard.style.display='none'; } else { providerDashboard.style.display='none'; clientDashboard.style.display='block'; } }
+
+    // re-render on accountType change saved
+    accountType.addEventListener('change', ()=>{ if(state.me){ state.me.role = accountType.value; save(state); } renderTop(); renderDashboards(); renderAllLists(); });
+
+    // utility
+    function now(){ return new Date().toLocaleString(); }
+
+  </script>
+</body>
+</html>
